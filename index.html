@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>سجل دوامي — العرض</title>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--text:#14202b;--sub:#5b6b7a;--line:#dde3ea;--accent:#2e7d32;--bad:#c62828}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1418;--card:#18212a;--text:#e8eef3;--sub:#9fb0bf;--line:#273542;--accent:#66bb6a;--bad:#ef5350}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,"Segoe UI",Tahoma,sans-serif}
+main{max-width:760px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+h1{font-size:20px;margin:0 0 4px}h2{font-size:16px;margin:0 0 10px}.sub{color:var(--sub);font-size:13px}
+input,select,button{font:inherit;width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text);margin:6px 0}
+button{background:var(--accent);color:#fff;border:0;font-weight:700;cursor:pointer}button.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.tabs{display:flex;gap:6px}.tabs button{background:transparent;color:var(--sub);border:1px solid var(--line)}.tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.kv{background:var(--bg);border-radius:10px;padding:10px}.kv b{display:block;font-size:18px}
+.net{grid-column:1/-1;background:var(--accent);color:#fff}.net .sub{color:#e8f5e9}
+.badge{display:inline-block;background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:2px 10px;font-size:12px;color:var(--sub)}
+.msg{padding:10px;border-radius:10px;margin:8px 0;font-size:14px;background:var(--bg)}.msg.err{color:var(--bad)}
+.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}th{color:var(--sub);font-weight:600}
+.hide{display:none}
+</style>
+</head>
+<body>
+<main>
+  <div class="card"><h1>سجل دوامي</h1><div class="sub">عرض بياناتك وحساباتك فقط — التعديل يتم من التطبيق</div></div>
+  <div id="msg"></div>
+
+  <section id="auth" class="card hide">
+    <div class="tabs"><button id="t-login" class="on">دخول</button><button id="t-reg">حساب جديد</button><button id="t-forgot">نسيت كلمة المرور</button></div>
+    <form id="f-login"><input id="l-id" placeholder="اسم المستخدم أو البريد" autocomplete="username" required><input id="l-pw" type="password" placeholder="كلمة المرور" autocomplete="current-password" required><button>دخول</button></form>
+    <form id="f-reg" class="hide"><input id="r-user" placeholder="اسم المستخدم (حروف إنجليزية صغيرة وأرقام و_)" autocomplete="username" required><input id="r-mail" type="email" placeholder="البريد الإلكتروني (للاستعادة)" autocomplete="email" required><input id="r-pw" type="password" placeholder="كلمة المرور (10 أحرف على الأقل)" autocomplete="new-password" minlength="10" required><button>إنشاء الحساب</button></form>
+    <form id="f-forgot" class="hide"><div class="sub">أدخل بريدك وسنرسل رابط تعيين كلمة مرور جديدة. نسيت اسم المستخدم؟ ادخل ببريدك مباشرة.</div><input id="fg-mail" type="email" placeholder="البريد الإلكتروني" required><button>إرسال الرابط</button></form>
+  </section>
+
+  <section id="recover" class="card hide"><h2>كلمة مرور جديدة</h2><form id="f-new"><input id="n-pw" type="password" placeholder="كلمة المرور الجديدة (10 أحرف على الأقل)" minlength="10" autocomplete="new-password" required><button>حفظ</button></form></section>
+
+  <section id="dash" class="hide">
+    <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="badge">عرض فقط</span><button id="out" class="ghost" style="width:auto;margin:0">خروج</button></div>
+      <select id="month"></select><div id="upd" class="sub"></div></div>
+    <div class="card"><div id="sum" class="grid"></div></div>
+    <div class="card"><h2>الأيام</h2><div class="scroll"><table><thead><tr><th>اليوم</th><th>حضور</th><th>انصراف</th><th>إضافي</th><th>النوع</th></tr></thead><tbody id="days"></tbody></table></div></div>
+  </section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script>
+const C = window.SIJIL_CONFIG, $ = (i) => document.getElementById(i);
+const sb = supabase.createClient(C.SUPABASE_URL, C.SUPABASE_ANON_KEY);
+const show = (id, on) => $(id).classList.toggle("hide", !on);
+const say = (t, err) => { const m = $("msg"); m.replaceChildren(); if (!t) return; const d = document.createElement("div"); d.className = "msg" + (err ? " err" : ""); d.textContent = t; m.append(d); };
+const el = (tag, text, cls) => { const e = document.createElement(tag); if (text != null) e.textContent = text; if (cls) e.className = cls; return e; };
+const money = (n) => Number(n || 0).toLocaleString("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const hm = (m) => { m = Math.round(Number(m || 0)); return Math.floor(m / 60) + ":" + String(m % 60).padStart(2, "0"); };
+
+// بطاقات الملخص: المفاتيح هي نفسها حقول MonthData في التطبيق (الأرقام محسوبة في التطبيق، لا نعيد حسابها هنا)
+const FIELDS = [
+  ["workDays", "أيام العمل", (v) => v], ["paidDays", "أيام مدفوعة", (v) => v],
+  ["leaveDays", "إجازات", (v) => v], ["sickDays", "مرضي", (v) => v], ["unpaidDays", "بدون أجر", (v) => v],
+  ["totalOt", "ساعات الإضافي", hm], ["salary", "الراتب", money], ["basePay", "الأساسي", money],
+  ["otPay", "أجر الإضافي", money], ["sickPay", "أجر المرضي", money], ["allow", "بدلات", money],
+  ["deduct", "خصومات", money], ["insurance", "تأمينات", money], ["debt", "سلف", money],
+];
+let months = [];
+
+function view(name) { ["auth", "recover", "dash"].forEach((s) => show(s, s === name)); }
+function tab(n) { ["login", "reg", "forgot"].forEach((t) => { show("f-" + t, t === n); $("t-" + t).classList.toggle("on", t === n); }); say(""); }
+$("t-login").onclick = () => tab("login"); $("t-reg").onclick = () => tab("reg"); $("t-forgot").onclick = () => tab("forgot");
+
+$("f-login").onsubmit = async (e) => {
+  e.preventDefault(); say("جارٍ الدخول...");
+  try {
+    const r = await fetch(C.SUPABASE_URL + "/functions/v1/" + (C.FN_LOGIN || "login-username"), {
+      method: "POST", headers: { "Content-Type": "application/json", apikey: C.SUPABASE_ANON_KEY, Authorization: "Bearer " + C.SUPABASE_ANON_KEY },
+      body: JSON.stringify({ identifier: $("l-id").value, password: $("l-pw").value }),
+    });
+    const j = await r.json();
+    if (!r.ok) return say(j.error || "تعذّر الدخول", true);
+    const { error } = await sb.auth.setSession({ access_token: j.access_token, refresh_token: j.refresh_token });
+    if (error) return say("تعذّر الدخول", true);
+    $("l-pw").value = ""; say(""); load();
+  } catch { say("تعذّر الاتصال بالخادم", true); }
+};
+
+$("f-reg").onsubmit = async (e) => {
+  e.preventDefault();
+  const u = $("r-user").value.trim().toLowerCase();
+  if (!/^[a-z0-9_]{3,24}$/.test(u)) return say("اسم المستخدم: 3 إلى 24 حرفاً إنجليزياً صغيراً أو أرقاماً أو _", true);
+  const { error } = await sb.auth.signUp({ email: $("r-mail").value.trim(), password: $("r-pw").value, options: { data: { username: u }, emailRedirectTo: location.origin + location.pathname } });
+  say(error ? "تعذّر إنشاء الحساب: " + error.message : "تم. افتح رسالة التأكيد في بريدك ثم ادخل.", !!error);
+};
+
+$("f-forgot").onsubmit = async (e) => {
+  e.preventDefault();
+  await sb.auth.resetPasswordForEmail($("fg-mail").value.trim(), { redirectTo: location.origin + location.pathname });
+  say("إن كان البريد مسجّلاً فقد أرسلنا رابط تعيين كلمة المرور.");
+};
+
+$("f-new").onsubmit = async (e) => {
+  e.preventDefault();
+  const { error } = await sb.auth.updateUser({ password: $("n-pw").value });
+  if (error) return say("تعذّر الحفظ: " + error.message, true);
+  say("تم تغيير كلمة المرور."); load();
+};
+
+$("out").onclick = async () => { await sb.auth.signOut(); view("auth"); tab("login"); };
+$("month").onchange = () => render($("month").value);
+
+async function load() {
+  const { data: s } = await sb.auth.getSession();
+  if (!s.session) { view("auth"); return; }
+  const { data, error } = await sb.from("months").select("month,summary,days,updated_at").order("month", { ascending: false });
+  if (error) { say("تعذّر تحميل البيانات", true); return; }
+  months = data; view("dash");
+  const sel = $("month"); sel.replaceChildren();
+  months.forEach((m) => { const o = el("option", m.month); o.value = m.month; sel.append(o); });
+  if (!months.length) { $("sum").replaceChildren(el("div", "لا توجد بيانات بعد. اربط التطبيق وأرسل شهراً.", "sub")); $("days").replaceChildren(); $("upd").textContent = ""; return; }
+  render(months[0].month);
+}
+
+function render(key) {
+  const m = months.find((x) => x.month === key); if (!m) return;
+  $("upd").textContent = "آخر تحديث من التطبيق: " + new Date(m.updated_at).toLocaleString("ar-EG");
+  const box = $("sum"); box.replaceChildren();
+  const net = el("div", null, "kv net"); net.append(el("span", "صافي القبض", "sub"), el("b", money(m.summary.net))); box.append(net);
+  FIELDS.forEach(([k, label, f]) => { if (m.summary[k] == null) return; const d = el("div", null, "kv"); d.append(el("span", label, "sub"), el("b", String(f(m.summary[k])))); box.append(d); });
+  const tb = $("days"); tb.replaceChildren();
+  (m.days || []).forEach((d) => { const tr = document.createElement("tr"); [String(d.d || "").slice(8), d.in || "—", d.out || "—", d.ot ? hm(d.ot) : "—", d.type || ""].forEach((v) => tr.append(el("td", v))); tb.append(tr); });
+}
+
+sb.auth.onAuthStateChange((ev) => { if (ev === "PASSWORD_RECOVERY") { view("recover"); } });
+load();
+</script>
+</body>
+</html>

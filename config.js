@@ -2,7 +2,7 @@
 window.SIJIL_CONFIG = {
   SUPABASE_URL: "https://rjvolkzacaaqqrtbiako.supabase.co",
   // الصق هنا المفتاح العام فقط: Supabase ← Project Settings ← API Keys ← Publishable key (يبدأ بـ sb_publishable_)
-  SUPABASE_ANON_KEY: "PASTE-PUBLISHABLE-KEY-HERE",
+  SUPABASE_ANON_KEY: "sb_publishable_Trz2NGkYTuT89kPyQIKidw_DGBdoB44",
   // اسم دالة الدخول (login-username) كما ولّدته لوحة Supabase
   FN_LOGIN: "smart-processor",
 };

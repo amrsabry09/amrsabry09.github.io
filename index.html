@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
 <title>حضور وانصراف بالبصمة — العرض</title>
 <style>
 :root{--bg:#f4f6f8;--card:#fff;--text:#14202b;--sub:#5b6b7a;--line:#dde3ea;--accent:#2e7d32;--bad:#c62828}
@@ -128,6 +129,18 @@ function render(key) {
   const tb = $("days"); tb.replaceChildren();
   (m.days || []).forEach((d) => { const tr = document.createElement("tr"); [String(d.d || "").slice(8), d.in || "—", d.out || "—", d.ot ? hm(d.ot) : "—", d.type || ""].forEach((v) => tr.append(el("td", v))); tb.append(tr); });
 }
+
+// خروج تلقائي بعد 30 دقيقة بلا نشاط (حماية إن تُرك الموقع مفتوحاً)
+let idleT; const IDLE = 30 * 60 * 1000;
+function arm() {
+  clearTimeout(idleT);
+  idleT = setTimeout(async () => {
+    const { data } = await sb.auth.getSession();
+    if (data.session) { await sb.auth.signOut(); view("auth"); tab("login"); say("تم تسجيل الخروج تلقائياً لعدم النشاط."); }
+  }, IDLE);
+}
+["click", "keydown", "touchstart", "mousemove"].forEach((e) => addEventListener(e, arm, { passive: true }));
+arm();
 
 sb.auth.onAuthStateChange((ev) => { if (ev === "PASSWORD_RECOVERY") { view("recover"); } });
 load();

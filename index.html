@@ -5,144 +5,375 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
 <title>حضور وانصراف بالبصمة — العرض</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f4f6f8;--card:#fff;--text:#14202b;--sub:#5b6b7a;--line:#dde3ea;--accent:#2e7d32;--bad:#c62828}
-@media (prefers-color-scheme:dark){:root{--bg:#0f1418;--card:#18212a;--text:#e8eef3;--sub:#9fb0bf;--line:#273542;--accent:#66bb6a;--bad:#ef5350}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,"Segoe UI",Tahoma,sans-serif}
-main{max-width:760px;margin:0 auto;padding:16px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
-h1{font-size:20px;margin:0 0 4px}h2{font-size:16px;margin:0 0 10px}.sub{color:var(--sub);font-size:13px}
-input,select,button{font:inherit;width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text);margin:6px 0}
-button{background:var(--accent);color:#fff;border:0;font-weight:700;cursor:pointer}button.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
-.tabs{display:flex;gap:6px}.tabs button{background:transparent;color:var(--sub);border:1px solid var(--line)}.tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.kv{background:var(--bg);border-radius:10px;padding:10px}.kv b{display:block;font-size:18px}
-.net{grid-column:1/-1;background:var(--accent);color:#fff}.net .sub{color:#e8f5e9}
-.badge{display:inline-block;background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:2px 10px;font-size:12px;color:var(--sub)}
-.msg{padding:10px;border-radius:10px;margin:8px 0;font-size:14px;background:var(--bg)}.msg.err{color:var(--bad)}
-.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}th{color:var(--sub);font-weight:600}
-.hide{display:none}
+:root{--bg:#eef1f4;--panel:#fff;--ink:#12263a;--sub:#5b6b7b;--line:#d9e0e7;--ok:#0e7c66;--on-ok:#fff;--bad:#b3372f;--blue:#2b6cb0;--amber:#a86a0c;--head:#12263a;--soft:#b9c7d6}
+@media (prefers-color-scheme:dark){:root{--bg:#0e161e;--panel:#162330;--ink:#e6edf3;--sub:#93a4b4;--line:#263644;--ok:#3fbf9f;--on-ok:#08231c;--bad:#f0827a;--blue:#6fa8e8;--amber:#e0b050;--head:#0a1118}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 "IBM Plex Sans Arabic",Tahoma,"Segoe UI",sans-serif}
+button,input{font:inherit}
+:focus-visible{outline:3px solid var(--ok);outline-offset:2px}
+.hide{display:none!important}
+.sub{color:var(--sub);font-size:14px;margin:0}
+h1,h2,h3,h4{margin:0}
+/* الدخول */
+#auth{min-height:100vh;display:grid;grid-template-columns:minmax(320px,5fr) 7fr}
+.brand{background:var(--head);color:#fff;padding:56px;display:flex;flex-direction:column;justify-content:center;gap:20px}
+.brand h1{font-size:36px;line-height:1.35;font-weight:700}
+.brand p{margin:0;color:var(--soft);max-width:36ch}
+.facts{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:12px}
+.facts li{padding-inline-start:14px;border-inline-start:3px solid var(--ok)}
+.formside{display:flex;align-items:center;justify-content:center;padding:32px}
+.box{width:100%;max-width:420px}
+.tabs{display:flex;gap:20px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:10px 0;color:var(--sub);cursor:pointer;font-weight:500}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--ok);font-weight:700}
+label{display:block;margin-top:14px;font-size:14px;color:var(--sub)}
+input{display:block;width:100%;margin-top:4px;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)}
+.btn{width:100%;margin-top:18px;padding:12px;border:0;border-radius:8px;background:var(--ok);color:var(--on-ok);font-weight:700;cursor:pointer}
+.msg{padding:10px 12px;border-radius:8px;margin:12px 0;font-size:14px;background:color-mix(in srgb,var(--ok) 14%,var(--panel))}
+.msg.err{background:color-mix(in srgb,var(--bad) 14%,var(--panel));color:var(--bad)}
+/* اللوحة */
+#app{min-height:100vh;display:grid;grid-template-rows:auto 1fr}
+.top{background:var(--head);color:#fff;display:flex;align-items:center;gap:14px;padding:12px 24px}
+.top h2{font-size:18px;font-weight:600;flex:1}
+.who{font-size:14px;color:var(--soft)}
+.tag{font-size:12px;border:1px solid var(--soft);color:var(--soft);border-radius:99px;padding:1px 10px}
+.ghost{background:none;border:1px solid var(--soft);color:#fff;border-radius:8px;padding:6px 14px;cursor:pointer}
+.shell{display:grid;grid-template-columns:260px minmax(0,1fr)}
+.side{background:var(--panel);border-inline-end:1px solid var(--line);padding:12px 0}
+.mi{display:flex;justify-content:space-between;align-items:baseline;gap:8px;width:100%;padding:12px 20px;background:none;border:0;border-inline-start:4px solid transparent;color:var(--ink);text-align:start;cursor:pointer}
+.mi small{color:var(--sub);font-size:13px}
+.mi.on{background:color-mix(in srgb,var(--ok) 12%,var(--panel));border-inline-start-color:var(--ok);font-weight:600}
+.main{padding:24px;display:grid;gap:16px;align-content:start}
+.wide{display:grid;grid-template-columns:minmax(340px,5fr) 7fr;gap:24px;align-items:start}
+.slip{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--ink);border-radius:4px}
+.sh{padding:18px 20px 14px}
+.sh h3{font-size:24px;font-weight:700}
+.cols{display:grid;grid-template-columns:1fr 1fr;border-block:1px solid var(--line)}
+.col{padding:14px 20px;display:flex;flex-direction:column}
+.col+.col{border-inline-start:1px solid var(--line)}
+.col h4{font-size:14px;color:var(--sub);font-weight:600;margin-bottom:6px}
+.row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:15px}
+.row.tot{border-bottom:0;font-weight:700;padding-top:10px;margin-top:auto}
+.row.minus b{color:var(--bad)}
+.net{display:flex;justify-content:space-between;align-items:baseline;padding:16px 20px;background:var(--ok);color:var(--on-ok)}
+.net b{font-size:32px;font-weight:700}
+.stats{display:grid;grid-template-columns:repeat(3,1fr)}
+.stats div{padding:12px 20px;border-bottom:1px solid var(--line)}
+.stats div:not(:nth-child(3n+1)){border-inline-start:1px solid var(--line)}
+.stats b{display:block;font-size:20px}
+.calhead{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.calhead h3{font-size:18px}
+.lg{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--sub)}
+.lg i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-inline-end:5px;vertical-align:-1px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.wd{text-align:center;font-size:13px;color:var(--sub);padding:4px 0;font-weight:500}
+.dc{min-height:82px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--panel);font-size:12px;display:flex;flex-direction:column;gap:2px}
+.dc .n{font-weight:700;font-size:15px}
+.dc .ot{color:var(--amber);font-weight:600}
+.dc .t{font-size:11px;white-space:nowrap}
+.dc .lb{color:var(--sub)}
+.dc.gap{border:0;background:none}
+.dc.empty{background:none;border-style:dashed;color:var(--sub)}
+.dc.work,.lg .work{--c:var(--ok)}.dc.leave,.lg .leave{--c:var(--blue)}.dc.sick,.lg .sick{--c:var(--amber)}.dc.unpaid,.lg .unpaid{--c:var(--bad)}
+.dc.work,.dc.leave,.dc.sick,.dc.unpaid{background:color-mix(in srgb,var(--c) 13%,var(--panel));border-color:color-mix(in srgb,var(--c) 45%,var(--line))}
+.lg i{background:var(--c)}
+.emptybox{background:var(--panel);border:1px dashed var(--line);border-radius:8px;padding:32px;text-align:center}
+.lnk{background:none;border:0;color:var(--ok);cursor:pointer;padding:6px 0;font-weight:500}
+.links{display:flex;justify-content:space-between;margin-top:14px}
+.pinput{font-size:26px;letter-spacing:.4em;text-align:center}
+.ph{font-size:24px;font-weight:700}
+dialog{border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);padding:24px;width:min(420px,92vw)}
+dialog::backdrop{background:rgba(10,17,24,.6)}
+.dact{display:flex;gap:10px;margin-top:6px}.dact .btn{margin-top:14px}
+.dact .btn.alt{background:none;color:var(--ink);border:1px solid var(--line)}
+.top{flex-wrap:wrap}
+@media (max-width:1100px){.wide{grid-template-columns:1fr}}
+@media (max-width:760px){
+  #auth{grid-template-columns:1fr}.brand{padding:28px 24px}.brand h1{font-size:26px}.formside{padding:24px 16px}
+  .top{padding:10px 14px}.who{display:none}
+  .shell{grid-template-columns:1fr}
+  .side{display:flex;overflow-x:auto;padding:8px;border-inline-end:0;border-bottom:1px solid var(--line)}
+  .mi{width:auto;flex:0 0 auto;border-inline-start:0;border-bottom:3px solid transparent;border-radius:6px;flex-direction:column;align-items:center;gap:0;padding:8px 14px}
+  .mi.on{border-bottom-color:var(--ok)}
+  .main{padding:14px}.cols{grid-template-columns:1fr}.col+.col{border-inline-start:0;border-top:1px solid var(--line)}
+  .dc{min-height:60px;padding:4px}.dc .t{font-size:10px}.dc .lb{display:none}
+}
 </style>
 </head>
 <body>
-<main>
-  <div class="card"><h1>حضور وانصراف بالبصمة</h1><div class="sub">عرض بياناتك وحساباتك فقط — التعديل يتم من التطبيق</div></div>
-  <div id="msg"></div>
+<section id="auth" class="hide">
+  <div class="brand">
+    <h1>حضور وانصراف بالبصمة</h1>
+    <p>تابع حضورك وراتبك الشهري من أي جهاز، بنفس الأرقام التي يحسبها التطبيق.</p>
+    <ul class="facts"><li>للعرض فقط، والتعديل يتم من التطبيق</li><li>بياناتك لا يراها غيرك</li><li>تتحدّث الأرقام تلقائيًا بعد كل تعديل</li></ul>
+  </div>
+  <div class="formside"><div class="box">
+    <div id="tabs" class="tabs"><button id="t-login" class="on">دخول</button><button id="t-reg">حساب جديد</button><button id="t-forgot">نسيت كلمة المرور</button></div>
+    <div id="msg-a"></div>
+    <form id="f-login"><label>اسم المستخدم أو البريد الإلكتروني<input id="l-id" autocomplete="username" required></label><label>كلمة المرور<input id="l-pw" type="password" autocomplete="current-password" required></label><button class="btn">تسجيل الدخول</button></form>
+    <form id="f-reg" class="hide"><label>اسم المستخدم (حروف إنجليزية صغيرة وأرقام و _)<input id="r-user" autocomplete="username" required></label><label>البريد الإلكتروني (لاستعادة الحساب)<input id="r-mail" type="email" autocomplete="email" required></label><label>كلمة المرور (١٠ أحرف على الأقل)<input id="r-pw" type="password" minlength="10" autocomplete="new-password" required></label><button class="btn">إنشاء الحساب</button></form>
+    <form id="f-forgot" class="hide"><p class="sub">أدخل بريدك وسنرسل لك رابطًا لتعيين كلمة مرور جديدة. إن نسيت اسم المستخدم فادخل ببريدك مباشرة.</p><label>البريد الإلكتروني<input id="fg-mail" type="email" autocomplete="email" required></label><button class="btn">إرسال الرابط</button></form>
+    <form id="f-new" class="hide"><h3>كلمة مرور جديدة</h3><label>كلمة المرور الجديدة (١٠ أحرف على الأقل)<input id="n-pw" type="password" minlength="10" autocomplete="new-password" required></label><button class="btn">حفظ كلمة المرور</button></form>
+    <form id="f-pin" class="hide" autocomplete="off"><h3 id="pin-h" class="ph"></h3><p id="pin-p" class="sub"></p>
+      <label id="lb-pw" class="hide">كلمة مرور حسابك<input id="p-pw" type="password" autocomplete="current-password"></label>
+      <label id="lb-pin"><span id="lb-pin-t">الرقم السري</span><input id="p-pin" class="pinput" type="password" inputmode="numeric" maxlength="8" autocomplete="off"></label>
+      <label id="lb-pin2" class="hide">تأكيد الرقم السري<input id="p-pin2" class="pinput" type="password" inputmode="numeric" maxlength="8" autocomplete="off"></label>
+      <button id="p-go" class="btn">فتح</button>
+      <div class="links"><button type="button" id="p-forgot" class="lnk">نسيت الرقم السري؟</button><button type="button" id="p-out" class="lnk">تسجيل الخروج</button></div>
+    </form>
+  </div></div>
+</section>
 
-  <section id="auth" class="card hide">
-    <div class="tabs"><button id="t-login" class="on">دخول</button><button id="t-reg">حساب جديد</button><button id="t-forgot">نسيت كلمة المرور</button></div>
-    <form id="f-login"><input id="l-id" placeholder="اسم المستخدم أو البريد" autocomplete="username" required><input id="l-pw" type="password" placeholder="كلمة المرور" autocomplete="current-password" required><button>دخول</button></form>
-    <form id="f-reg" class="hide"><input id="r-user" placeholder="اسم المستخدم (حروف إنجليزية صغيرة وأرقام و_)" autocomplete="username" required><input id="r-mail" type="email" placeholder="البريد الإلكتروني (للاستعادة)" autocomplete="email" required><input id="r-pw" type="password" placeholder="كلمة المرور (10 أحرف على الأقل)" autocomplete="new-password" minlength="10" required><button>إنشاء الحساب</button></form>
-    <form id="f-forgot" class="hide"><div class="sub">أدخل بريدك وسنرسل رابط تعيين كلمة مرور جديدة. نسيت اسم المستخدم؟ ادخل ببريدك مباشرة.</div><input id="fg-mail" type="email" placeholder="البريد الإلكتروني" required><button>إرسال الرابط</button></form>
-  </section>
+<div id="app" class="hide">
+  <header class="top"><h2>حضور وانصراف بالبصمة</h2><span id="who" class="who"></span><span class="tag">عرض فقط</span><button id="lockbtn" class="ghost">قفل</button><button id="chg" class="ghost">تغيير الرقم السري</button><button id="out" class="ghost">تسجيل الخروج</button></header>
+  <div class="shell">
+    <nav id="side" class="side" aria-label="الأشهر"></nav>
+    <main class="main">
+      <div id="msg-d"></div>
+      <div id="empty" class="emptybox hide"><h3>لا توجد بيانات بعد</h3><p class="sub">افتح التطبيق ثم الإعدادات ثم «الحساب والمزامنة» وسجّل الدخول، وستظهر أشهرك هنا تلقائيًا.</p></div>
+      <div id="view" class="wide hide"><section id="slip" class="slip"></section><section id="calwrap"></section></div>
+    </main>
+  </div>
+</div>
 
-  <section id="recover" class="card hide"><h2>كلمة مرور جديدة</h2><form id="f-new"><input id="n-pw" type="password" placeholder="كلمة المرور الجديدة (10 أحرف على الأقل)" minlength="10" autocomplete="new-password" required><button>حفظ</button></form></section>
+<dialog id="dlg"><form id="f-chg" method="dialog" autocomplete="off"><h3 class="ph">تغيير الرقم السري</h3><div id="msg-g"></div>
+  <label>الرقم السري الحالي<input id="d-old" class="pinput" type="password" inputmode="numeric" maxlength="8"></label>
+  <label>الرقم السري الجديد<input id="d-new" class="pinput" type="password" inputmode="numeric" maxlength="8"></label>
+  <label>تأكيد الرقم الجديد<input id="d-new2" class="pinput" type="password" inputmode="numeric" maxlength="8"></label>
+  <div class="dact"><button class="btn">حفظ</button><button type="button" id="d-cancel" class="btn alt">إلغاء</button></div></form></dialog>
 
-  <section id="dash" class="hide">
-    <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="badge">عرض فقط</span><button id="out" class="ghost" style="width:auto;margin:0">خروج</button></div>
-      <select id="month"></select><div id="upd" class="sub"></div></div>
-    <div class="card"><div id="sum" class="grid"></div></div>
-    <div class="card"><h2>الأيام</h2><div class="scroll"><table><thead><tr><th>اليوم</th><th>حضور</th><th>انصراف</th><th>إضافي</th><th>النوع</th></tr></thead><tbody id="days"></tbody></table></div></div>
-  </section>
-</main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
 <script>
 const C = window.SIJIL_CONFIG, $ = (i) => document.getElementById(i);
+const API = C.SUPABASE_URL + "/functions/v1/" + (C.FN_LOGIN || "login-username");
 const sb = supabase.createClient(C.SUPABASE_URL, C.SUPABASE_ANON_KEY);
+const AD = "٠١٢٣٤٥٦٧٨٩", ad = (s) => String(s).replace(/\d/g, (d) => AD[d]);
+const MN = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+const WD = ["السبت","الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة"];
+const TYPE = { work: "حضور", leave: "إجازة", sick: "مرضي", unpaid: "بدون أجر" };
+const nf = new Intl.NumberFormat("ar-EG", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const money = (n) => nf.format(Number(n || 0));
+const hm = (m) => { m = Math.round(Number(m || 0)); return ad(Math.floor(m / 60) + ":" + String(m % 60).padStart(2, "0")); };
+const ymLabel = (k) => { const [y, m] = k.split("-"); return MN[+m - 1] + " " + ad(y); };
+const el = (t, text, cls) => { const e = document.createElement(t); if (text != null) e.textContent = text; if (cls) e.className = cls; return e; };
 const show = (id, on) => $(id).classList.toggle("hide", !on);
-const say = (t, err) => { const m = $("msg"); m.replaceChildren(); if (!t) return; const d = document.createElement("div"); d.className = "msg" + (err ? " err" : ""); d.textContent = t; m.append(d); };
-const el = (tag, text, cls) => { const e = document.createElement(tag); if (text != null) e.textContent = text; if (cls) e.className = cls; return e; };
-const money = (n) => Number(n || 0).toLocaleString("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const hm = (m) => { m = Math.round(Number(m || 0)); return Math.floor(m / 60) + ":" + String(m % 60).padStart(2, "0"); };
+let months = [], recovering = false;
 
-// بطاقات الملخص: المفاتيح هي نفسها حقول MonthData في التطبيق (الأرقام محسوبة في التطبيق، لا نعيد حسابها هنا)
-const FIELDS = [
-  ["workDays", "أيام العمل", (v) => v], ["paidDays", "أيام مدفوعة", (v) => v],
-  ["leaveDays", "إجازات", (v) => v], ["sickDays", "مرضي", (v) => v], ["unpaidDays", "بدون أجر", (v) => v],
-  ["totalOt", "ساعات الإضافي", hm], ["salary", "الراتب", money], ["basePay", "الأساسي", money],
-  ["otPay", "أجر الإضافي", money], ["sickPay", "أجر المرضي", money], ["allow", "بدلات", money],
-  ["deduct", "خصومات", money], ["insurance", "تأمينات", money], ["debt", "سلف", money],
-];
-let months = [];
-
-function view(name) { ["auth", "recover", "dash"].forEach((s) => show(s, s === name)); }
-function tab(n) { ["login", "reg", "forgot"].forEach((t) => { show("f-" + t, t === n); $("t-" + t).classList.toggle("on", t === n); }); say(""); }
+function say(t, err) {
+  ["msg-a", "msg-d"].forEach((id) => { const m = $(id); m.replaceChildren(); if (!t) return; const d = el("div", t, "msg" + (err ? " err" : "")); d.setAttribute("role", err ? "alert" : "status"); m.append(d); });
+}
+function arErr(m) {
+  m = String(m || "");
+  if (/already (been )?registered|already exists/i.test(m)) return "هذا البريد مسجّل بالفعل. سجّل الدخول بدل إنشاء حساب.";
+  if (/signups? (are |is )?(not allowed|disabled)/i.test(m)) return "إنشاء الحسابات مغلق. استخدم حسابك الحالي.";
+  if (/password.*(short|least|weak)/i.test(m)) return "كلمة المرور ضعيفة. استخدم ١٠ أحرف على الأقل.";
+  if (/rate limit|too many|security purposes/i.test(m)) return "محاولات كثيرة. انتظر قليلًا ثم أعد المحاولة.";
+  if (/invalid.*email|email.*invalid/i.test(m)) return "البريد الإلكتروني غير صحيح.";
+  if (/different from the old|same password/i.test(m)) return "اختر كلمة مرور مختلفة عن القديمة.";
+  if (/expired|invalid.*(token|link)|otp/i.test(m)) return "الرابط منتهي أو غير صالح. اطلب رابطًا جديدًا.";
+  if (/network|fetch/i.test(m)) return "تعذّر الاتصال بالإنترنت.";
+  return "تعذّرت العملية. حاول مرة أخرى.";
+}
+function screen(n) { show("auth", n === "auth"); show("app", n === "app"); }
+function tab(n) {
+  ["login", "reg", "forgot", "new", "pin"].forEach((t) => { show("f-" + t, t === n); const b = $("t-" + t); if (b) b.classList.toggle("on", t === n); });
+  show("tabs", n !== "new" && n !== "pin"); say("");
+}
 $("t-login").onclick = () => tab("login"); $("t-reg").onclick = () => tab("reg"); $("t-forgot").onclick = () => tab("forgot");
 
 $("f-login").onsubmit = async (e) => {
-  e.preventDefault(); say("جارٍ الدخول...");
+  e.preventDefault(); say("جارٍ تسجيل الدخول...");
   try {
-    const r = await fetch(C.SUPABASE_URL + "/functions/v1/" + (C.FN_LOGIN || "login-username"), {
-      method: "POST", headers: { "Content-Type": "application/json", apikey: C.SUPABASE_ANON_KEY, Authorization: "Bearer " + C.SUPABASE_ANON_KEY },
-      body: JSON.stringify({ identifier: $("l-id").value, password: $("l-pw").value }),
+    const r = await fetch(API, {
+      // text/plain = طلب بسيط بدون فحص مسبق (preflight) فلا تعطّله قواعد CORS؛ والدالة تقرأ الجسم كـ JSON في كل الأحوال
+      method: "POST", headers: { "Content-Type": "text/plain;charset=UTF-8" },
+      body: JSON.stringify({ action: "login", identifier: $("l-id").value, password: $("l-pw").value }),
     });
-    const j = await r.json();
-    if (!r.ok) return say(j.error || "تعذّر الدخول", true);
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) return say(j.error || "تعذّر تسجيل الدخول.", true);
     const { error } = await sb.auth.setSession({ access_token: j.access_token, refresh_token: j.refresh_token });
-    if (error) return say("تعذّر الدخول", true);
+    if (error) return say(arErr(error.message), true);
     $("l-pw").value = ""; say(""); load();
-  } catch { say("تعذّر الاتصال بالخادم", true); }
+  } catch (err) { console.error("login failed", err); say("تعذّر الوصول إلى الخادم. تأكد من الإنترنت، ثم أعد تحميل الصفحة (Ctrl+F5) وحاول مرة أخرى.", true); }
 };
-
 $("f-reg").onsubmit = async (e) => {
   e.preventDefault();
   const u = $("r-user").value.trim().toLowerCase();
-  if (!/^[a-z0-9_]{3,24}$/.test(u)) return say("اسم المستخدم: 3 إلى 24 حرفاً إنجليزياً صغيراً أو أرقاماً أو _", true);
+  if (!/^[a-z0-9_]{3,24}$/.test(u)) return say("اسم المستخدم من ٣ إلى ٢٤ حرفًا: إنجليزية صغيرة أو أرقام أو _ فقط.", true);
   const { error } = await sb.auth.signUp({ email: $("r-mail").value.trim(), password: $("r-pw").value, options: { data: { username: u }, emailRedirectTo: location.origin + location.pathname } });
-  say(error ? "تعذّر إنشاء الحساب: " + error.message : "تم. افتح رسالة التأكيد في بريدك ثم ادخل.", !!error);
+  say(error ? arErr(error.message) : "تم إنشاء الحساب. افتح رسالة التأكيد في بريدك ثم سجّل الدخول.", !!error);
 };
-
 $("f-forgot").onsubmit = async (e) => {
   e.preventDefault();
   await sb.auth.resetPasswordForEmail($("fg-mail").value.trim(), { redirectTo: location.origin + location.pathname });
-  say("إن كان البريد مسجّلاً فقد أرسلنا رابط تعيين كلمة المرور.");
+  say("إن كان البريد مسجّلًا فقد أرسلنا إليه رابط تعيين كلمة المرور.");
 };
-
 $("f-new").onsubmit = async (e) => {
   e.preventDefault();
   const { error } = await sb.auth.updateUser({ password: $("n-pw").value });
-  if (error) return say("تعذّر الحفظ: " + error.message, true);
-  say("تم تغيير كلمة المرور."); load();
+  if (error) return say(arErr(error.message), true);
+  recovering = false; $("n-pw").value = ""; load(); say("تم تغيير كلمة المرور.");
+};
+async function logout() { await sb.auth.signOut(); wipe(); screen("auth"); tab("login"); }
+$("out").onclick = logout; $("p-out").onclick = logout;
+
+// ===== الرقم السري: القراءة تتم عبر الخادم فقط بعد التحقق منه =====
+let pmode = "unlock";
+const digits = (v) => String(v).replace(/[٠-٩]/g, (d) => AD.indexOf(d)).replace(/\D/g, "");
+document.querySelectorAll(".pinput").forEach((i) => i.addEventListener("input", () => { i.value = digits(i.value).slice(0, 8); }));
+const lockedMsg = (sec) => "الدخول بالرقم السري مقفل مؤقتًا. حاول بعد " + ad(Math.ceil(sec / 60)) + " دقيقة.";
+
+async function vault(action, extra) {
+  const { data: s } = await sb.auth.getSession();
+  if (!s.session) return { status: 401, j: { error: "انتهت الجلسة. سجّل الدخول من جديد.", code: "session" } };
+  try {
+    const r = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + s.session.access_token }, body: JSON.stringify({ action, ...extra }) });
+    return { status: r.status, j: await r.json().catch(() => ({})) };
+  } catch { return { status: 0, j: { error: "تعذّر الاتصال بالخادم." } }; }
+}
+function wipe() { months = []; $("side").replaceChildren(); $("slip").replaceChildren(); $("calwrap").replaceChildren(); }
+function pinMode(m) {
+  pmode = m; const set = m === "setup", rs = m === "reset";
+  $("pin-h").textContent = set ? "أنشئ رقمًا سريًا" : rs ? "استعادة الرقم السري" : "أدخل الرقم السري";
+  $("pin-p").textContent = set ? "يحمي بياناتك إن فُتح الموقع على جهاز غيرك. من ٤ إلى ٨ أرقام، ويمكنك تغييره لاحقًا." : rs ? "أدخل كلمة مرور حسابك لتعيين رقم سري جديد." : "بياناتك محمية. أدخل رقمك السري لعرضها.";
+  show("lb-pw", rs); show("lb-pin2", set || rs); show("p-forgot", !set);
+  $("lb-pin-t").textContent = set || rs ? "الرقم السري الجديد" : "الرقم السري";
+  $("p-go").textContent = set ? "حفظ وفتح" : rs ? "تعيين الرقم السري" : "فتح";
+  $("p-forgot").textContent = rs ? "رجوع" : "نسيت الرقم السري؟";
+  ["p-pw", "p-pin", "p-pin2"].forEach((i) => { $(i).value = ""; });
+  screen("auth"); tab("pin"); setTimeout(() => $(rs ? "p-pw" : "p-pin").focus(), 50);
+}
+function fail(status, j) {
+  if (j.code === "session") { sb.auth.signOut(); wipe(); screen("auth"); tab("login"); return say(j.error, true); }
+  say(j.lockedFor ? lockedMsg(j.lockedFor) : (j.error || "تعذّرت العملية."), true);
+  ["p-pin", "p-pin2"].forEach((i) => { $(i).value = ""; });
+}
+function open(j) {
+  months = j.months || []; $("who").textContent = j.username || "";
+  ["p-pw", "p-pin", "p-pin2"].forEach((i) => { $(i).value = ""; });
+  screen("app"); side(); show("empty", !months.length); show("view", !!months.length);
+  if (months.length) pick(months[0].month);
+  armLock();
+}
+function lock() { wipe(); pinMode("unlock"); }
+
+$("f-pin").onsubmit = async (e) => {
+  e.preventDefault();
+  const pin = digits($("p-pin").value), pin2 = digits($("p-pin2").value);
+  if (!/^\d{4,8}$/.test(pin)) return say("الرقم السري من ٤ إلى ٨ أرقام.", true);
+  if (pmode !== "unlock" && pin !== pin2) return say("الرقمان غير متطابقين.", true);
+  say("جارٍ التحقق...");
+  const [act, extra] = pmode === "setup" ? ["set", { pin }] : pmode === "reset" ? ["reset", { password: $("p-pw").value, newPin: pin }] : ["unlock", { pin }];
+  const { status, j } = await vault(act, extra);
+  if (!j.ok) return fail(status, j);
+  say(""); open(j);
+};
+$("p-forgot").onclick = () => pinMode(pmode === "reset" ? "unlock" : "reset");
+$("lockbtn").onclick = lock;
+$("chg").onclick = () => { ["d-old", "d-new", "d-new2"].forEach((i) => { $(i).value = ""; }); $("msg-g").replaceChildren(); $("dlg").showModal(); };
+$("d-cancel").onclick = () => $("dlg").close();
+$("f-chg").onsubmit = async (e) => {
+  e.preventDefault();
+  const old = digits($("d-old").value), nw = digits($("d-new").value), n2 = digits($("d-new2").value), g = $("msg-g");
+  const gm = (t) => { g.replaceChildren(el("div", t, "msg err")); };
+  if (!/^\d{4,8}$/.test(old) || !/^\d{4,8}$/.test(nw)) return gm("الرقم السري من ٤ إلى ٨ أرقام.");
+  if (nw !== n2) return gm("الرقمان الجديدان غير متطابقين.");
+  const { status, j } = await vault("change", { pin: old, newPin: nw });
+  if (!j.ok) { if (j.code === "session") { $("dlg").close(); return fail(status, j); } return gm(j.lockedFor ? lockedMsg(j.lockedFor) : (j.error || "تعذّر التغيير.")); }
+  $("dlg").close(); say("تم تغيير الرقم السري.");
 };
 
-$("out").onclick = async () => { await sb.auth.signOut(); view("auth"); tab("login"); };
-$("month").onchange = () => render($("month").value);
-
 async function load() {
+  if (recovering) return;
   const { data: s } = await sb.auth.getSession();
-  if (!s.session) { view("auth"); return; }
-  const { data, error } = await sb.from("months").select("month,summary,days,updated_at").order("month", { ascending: false });
-  if (error) { say("تعذّر تحميل البيانات", true); return; }
-  months = data; view("dash");
-  const sel = $("month"); sel.replaceChildren();
-  months.forEach((m) => { const o = el("option", m.month); o.value = m.month; sel.append(o); });
-  if (!months.length) { $("sum").replaceChildren(el("div", "لا توجد بيانات بعد. اربط التطبيق وأرسل شهراً.", "sub")); $("days").replaceChildren(); $("upd").textContent = ""; return; }
-  render(months[0].month);
+  if (!s.session) { screen("auth"); tab("login"); return; }
+  const { status, j } = await vault("status");
+  if (!j.ok) return fail(status, j);
+  pinMode(j.hasPin ? "unlock" : "setup");
+  if (j.lockedFor > 0) say(lockedMsg(j.lockedFor), true);
 }
 
-function render(key) {
-  const m = months.find((x) => x.month === key); if (!m) return;
-  $("upd").textContent = "آخر تحديث من التطبيق: " + new Date(m.updated_at).toLocaleString("ar-EG");
-  const box = $("sum"); box.replaceChildren();
-  const net = el("div", null, "kv net"); net.append(el("span", "صافي القبض", "sub"), el("b", money(m.summary.net))); box.append(net);
-  FIELDS.forEach(([k, label, f]) => { if (m.summary[k] == null) return; const d = el("div", null, "kv"); d.append(el("span", label, "sub"), el("b", String(f(m.summary[k])))); box.append(d); });
-  const tb = $("days"); tb.replaceChildren();
-  (m.days || []).forEach((d) => { const tr = document.createElement("tr"); [String(d.d || "").slice(8), d.in || "—", d.out || "—", d.ot ? hm(d.ot) : "—", d.type || ""].forEach((v) => tr.append(el("td", v))); tb.append(tr); });
+function side() {
+  const nav = $("side"); nav.replaceChildren();
+  months.forEach((m) => {
+    const b = el("button", null, "mi"); b.dataset.k = m.month;
+    b.append(el("span", ymLabel(m.month)), el("small", money((m.summary || {}).net)));
+    b.onclick = () => pick(m.month); nav.append(b);
+  });
+}
+function pick(k) {
+  document.querySelectorAll(".mi").forEach((b) => b.classList.toggle("on", b.dataset.k === k));
+  const m = months.find((x) => x.month === k); if (!m) return;
+  slip(m); cal(m);
 }
 
-// خروج تلقائي بعد 30 دقيقة بلا نشاط (حماية إن تُرك الموقع مفتوحاً)
+function col(title, items, s, minus) {
+  const c = el("div", null, "col"); c.append(el("h4", title)); let sum = 0;
+  items.forEach(([label, k]) => {
+    if (s[k] == null) return; const v = Number(s[k]) || 0; sum += v;
+    const r = el("div", null, "row" + (minus && v ? " minus" : "")); r.append(el("span", label), el("b", v ? (minus ? "−" : "") + money(v) : "—")); c.append(r);
+  });
+  const t = el("div", null, "row tot"); t.append(el("span", "الإجمالي"), el("b", money(sum))); c.append(t); return c;
+}
+function slip(m) {
+  const s = m.summary || {}, root = $("slip"); root.replaceChildren();
+  const h = el("div", null, "sh"); h.append(el("h3", ymLabel(m.month)),
+    el("p", "آخر تحديث من التطبيق: " + new Date(m.updated_at).toLocaleString("ar-EG-u-ca-gregory", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }), "sub"));
+  const cols = el("div", null, "cols");
+  cols.append(col("المستحقات", [["الراتب الأساسي", "basePay"], ["أجر الإجازة المرضية", "sickPay"], ["أجر الإضافي", "otPay"], ["بدلات", "allow"]], s, false),
+    col("الخصومات", [["خصومات", "deduct"], ["سلف", "debt"], ["تأمينات", "insurance"]], s, true));
+  const net = el("div", null, "net"); net.append(el("span", "صافي القبض"), el("b", money(s.net)));
+  const st = el("div", null, "stats");
+  [["أيام العمل", "workDays", ad], ["أيام محتسبة", "paidDays", ad], ["ساعات الإضافي", "totalOt", hm], ["إجازات", "leaveDays", ad], ["مرضي", "sickDays", ad], ["بدون أجر", "unpaidDays", ad]]
+    .forEach(([l, k, f]) => { const d = el("div"); d.append(el("span", l, "sub"), el("b", s[k] == null ? "—" : f(s[k]))); st.append(d); });
+  root.append(h, cols, net, st);
+}
+function cal(m) {
+  const [y, mo] = m.month.split("-").map(Number), n = new Date(y, mo, 0).getDate(), first = (new Date(y, mo - 1, 1).getDay() + 1) % 7;
+  const by = {}; (m.days || []).forEach((d) => { by[d.d] = d; });
+  const w = $("calwrap"); w.replaceChildren();
+  const hd = el("div", null, "calhead"), lg = el("div", null, "lg"); hd.append(el("h3", "سجل الأيام")); hd.append(lg);
+  Object.keys(TYPE).forEach((t) => { const x = el("span", null, t); x.append(el("i"), document.createTextNode(TYPE[t])); lg.append(x); });
+  const g = el("div", null, "cal"); WD.forEach((x) => g.append(el("div", x, "wd")));
+  for (let i = 0; i < first; i++) g.append(el("div", null, "dc gap"));
+  for (let d = 1; d <= n; d++) {
+    const key = y + "-" + String(mo).padStart(2, "0") + "-" + String(d).padStart(2, "0"), r = by[key];
+    const c = el("div", null, "dc " + (r ? r.type : "empty")); c.append(el("span", ad(d), "n"));
+    if (r) {
+      if (r.type === "work") {
+        [["حضور ", r.in], ["انصراف ", r.out]].forEach(([l, v]) => { const t = el("span", null, "t"); t.append(el("span", l, "lb"), document.createTextNode(v ? ad(v) : "—")); c.append(t); });
+        if (r.ot) c.append(el("span", "إضافي " + hm(r.ot), "t ot"));
+      }
+      else c.append(el("span", TYPE[r.type] || "", "t"));
+      if (r.note) c.title = r.note;
+    }
+    g.append(c);
+  }
+  w.append(hd, g);
+}
+
+// خروج تلقائي بعد 30 دقيقة بلا نشاط
 let idleT; const IDLE = 30 * 60 * 1000;
 function arm() {
   clearTimeout(idleT);
   idleT = setTimeout(async () => {
     const { data } = await sb.auth.getSession();
-    if (data.session) { await sb.auth.signOut(); view("auth"); tab("login"); say("تم تسجيل الخروج تلقائياً لعدم النشاط."); }
+    if (data.session) { await sb.auth.signOut(); wipe(); screen("auth"); tab("login"); say("تم تسجيل الخروج تلقائيًا لعدم النشاط.", false); }
   }, IDLE);
 }
 ["click", "keydown", "touchstart", "mousemove"].forEach((e) => addEventListener(e, arm, { passive: true }));
 arm();
 
-sb.auth.onAuthStateChange((ev) => { if (ev === "PASSWORD_RECOVERY") { view("recover"); } });
+// قفل تلقائي للبيانات بعد 5 دقائق بلا نشاط (يبقى الحساب مسجّلًا ويُطلب الرقم السري فقط)
+let lockT; const LOCK_MS = 5 * 60 * 1000;
+function armLock() { clearTimeout(lockT); if (!$("app").classList.contains("hide")) lockT = setTimeout(lock, LOCK_MS); }
+["click", "keydown", "touchstart", "mousemove"].forEach((e) => addEventListener(e, armLock, { passive: true }));
+
+sb.auth.onAuthStateChange((ev) => { if (ev === "PASSWORD_RECOVERY") { recovering = true; screen("auth"); tab("new"); } });
 load();
 </script>
 </body>

@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#12263a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>حضور وانصراف بالبصمة — العرض</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -90,6 +94,17 @@ dialog::backdrop{background:rgba(10,17,24,.6)}
 .dact{display:flex;gap:10px;margin-top:6px}.dact .btn{margin-top:14px}
 .dact .btn.alt{background:none;color:var(--ink);border:1px solid var(--line)}
 .top{flex-wrap:wrap}
+.pw{position:relative}.pw input{padding-inline-end:76px}
+.eye{position:absolute;inset-inline-end:6px;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--ok);cursor:pointer;font-size:13px;font-weight:600;padding:8px}
+.dc .nt{align-self:flex-start;font-size:10px;line-height:1.5;border:1px solid var(--amber);color:var(--amber);border-radius:4px;padding:0 4px}
+.notes{margin-top:20px}.notes h3{font-size:16px;margin-bottom:6px}
+.note{display:flex;gap:14px;padding:10px 0;border-bottom:1px dashed var(--line)}
+.note b{flex:0 0 92px}.note span{overflow-wrap:anywhere}
+.bk{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--ink);border-radius:4px}
+.bkr{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:12px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line)}
+.bkr:last-child{border-bottom:0}
+.bkh{padding:18px 20px 6px}.bkh h3{font-size:22px}
+.mi.bkb{border-top:1px solid var(--line);margin-top:8px;padding-top:14px}
 @media (max-width:1100px){.wide{grid-template-columns:1fr}}
 @media (max-width:760px){
   #auth{grid-template-columns:1fr}.brand{padding:28px 24px}.brand h1{font-size:26px}.formside{padding:24px 16px}
@@ -98,7 +113,7 @@ dialog::backdrop{background:rgba(10,17,24,.6)}
   .side{display:flex;overflow-x:auto;padding:8px;border-inline-end:0;border-bottom:1px solid var(--line)}
   .mi{width:auto;flex:0 0 auto;border-inline-start:0;border-bottom:3px solid transparent;border-radius:6px;flex-direction:column;align-items:center;gap:0;padding:8px 14px}
   .mi.on{border-bottom-color:var(--ok)}
-  .main{padding:14px}.cols{grid-template-columns:1fr}.col+.col{border-inline-start:0;border-top:1px solid var(--line)}
+  .mi.bkb{border-top:0;margin-top:0;padding-top:8px}.bkr{grid-template-columns:1fr auto}.main{padding:14px}.cols{grid-template-columns:1fr}.col+.col{border-inline-start:0;border-top:1px solid var(--line)}
   .dc{min-height:60px;padding:4px}.dc .t{font-size:10px}.dc .lb{display:none}
 }
 </style>
@@ -135,6 +150,7 @@ dialog::backdrop{background:rgba(10,17,24,.6)}
       <div id="msg-d"></div>
       <div id="empty" class="emptybox hide"><h3>لا توجد بيانات بعد</h3><p class="sub">افتح التطبيق ثم الإعدادات ثم «الحساب والمزامنة» وسجّل الدخول، وستظهر أشهرك هنا تلقائيًا.</p></div>
       <div id="view" class="wide hide"><section id="slip" class="slip"></section><section id="calwrap"></section></div>
+      <section id="backups" class="hide"></section>
     </main>
   </div>
 </div>
@@ -161,7 +177,7 @@ const hm = (m) => { m = Math.round(Number(m || 0)); return ad(Math.floor(m / 60)
 const ymLabel = (k) => { const [y, m] = k.split("-"); return MN[+m - 1] + " " + ad(y); };
 const el = (t, text, cls) => { const e = document.createElement(t); if (text != null) e.textContent = text; if (cls) e.className = cls; return e; };
 const show = (id, on) => $(id).classList.toggle("hide", !on);
-let months = [], recovering = false;
+let months = [], recovering = false, PIN = "";
 
 function say(t, err) {
   ["msg-a", "msg-d"].forEach((id) => { const m = $(id); m.replaceChildren(); if (!t) return; const d = el("div", t, "msg" + (err ? " err" : "")); d.setAttribute("role", err ? "alert" : "status"); m.append(d); });
@@ -235,7 +251,8 @@ async function vault(action, extra) {
     return { status: r.status, j: await r.json().catch(() => ({})) };
   } catch { return { status: 0, j: { error: "تعذّر الاتصال بالخادم." } }; }
 }
-function wipe() { months = []; $("side").replaceChildren(); $("slip").replaceChildren(); $("calwrap").replaceChildren(); }
+function resetEyes() { document.querySelectorAll(".pw input").forEach((i) => { i.type = "password"; }); document.querySelectorAll(".eye").forEach((b) => { b.textContent = "إظهار"; }); }
+function wipe() { PIN = ""; resetEyes(); show("backups", false); $("backups").replaceChildren(); months = []; $("side").replaceChildren(); $("slip").replaceChildren(); $("calwrap").replaceChildren(); }
 function pinMode(m) {
   pmode = m; const set = m === "setup", rs = m === "reset";
   $("pin-h").textContent = set ? "أنشئ رقمًا سريًا" : rs ? "استعادة الرقم السري" : "أدخل الرقم السري";
@@ -255,7 +272,7 @@ function fail(status, j) {
 function open(j) {
   months = j.months || []; $("who").textContent = j.username || "";
   ["p-pw", "p-pin", "p-pin2"].forEach((i) => { $(i).value = ""; });
-  screen("app"); side(); show("empty", !months.length); show("view", !!months.length);
+  screen("app"); side(); show("backups", false); show("empty", !months.length); show("view", !!months.length);
   if (months.length) pick(months[0].month);
   armLock();
 }
@@ -270,7 +287,7 @@ $("f-pin").onsubmit = async (e) => {
   const [act, extra] = pmode === "setup" ? ["set", { pin }] : pmode === "reset" ? ["reset", { password: $("p-pw").value, newPin: pin }] : ["unlock", { pin }];
   const { status, j } = await vault(act, extra);
   if (!j.ok) return fail(status, j);
-  say(""); open(j);
+  PIN = pin; say(""); open(j);
 };
 $("p-forgot").onclick = () => pinMode(pmode === "reset" ? "unlock" : "reset");
 $("lockbtn").onclick = lock;
@@ -284,7 +301,7 @@ $("f-chg").onsubmit = async (e) => {
   if (nw !== n2) return gm("الرقمان الجديدان غير متطابقين.");
   const { status, j } = await vault("change", { pin: old, newPin: nw });
   if (!j.ok) { if (j.code === "session") { $("dlg").close(); return fail(status, j); } return gm(j.lockedFor ? lockedMsg(j.lockedFor) : (j.error || "تعذّر التغيير.")); }
-  $("dlg").close(); say("تم تغيير الرقم السري.");
+  PIN = nw; $("dlg").close(); say("تم تغيير الرقم السري.");
 };
 
 async function load() {
@@ -304,8 +321,40 @@ function side() {
     b.append(el("span", ymLabel(m.month)), el("small", money((m.summary || {}).net)));
     b.onclick = () => pick(m.month); nav.append(b);
   });
+  const k = el("button", null, "mi bkb"); k.dataset.k = "__bk"; k.append(el("span", "النسخ الاحتياطية"));
+  k.onclick = pickBackups; nav.append(k);
+}
+function pickBackups() {
+  document.querySelectorAll(".mi").forEach((b) => b.classList.toggle("on", b.dataset.k === "__bk"));
+  show("view", false); show("empty", false); show("backups", true); loadBackups();
+}
+const when = (iso) => new Date(iso).toLocaleString("ar-EG-u-ca-gregory", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
+async function loadBackups() {
+  const box = $("backups"); box.replaceChildren(el("p", "جارٍ التحميل...", "sub"));
+  const { status, j } = await vault("backups", { pin: PIN });
+  if (!j.ok) { box.replaceChildren(); return fail(status, j); }
+  box.replaceChildren();
+  const wrap = el("div", null, "bk"), h = el("div", null, "bkh");
+  h.append(el("h3", "النسخ الاحتياطية"), el("p", "يرفع التطبيق نسخة كاملة من بياناتك تلقائيًا بعد تعديلاتك وكل يوم، ويحتفظ الموقع بنسخة لكل يوم لآخر ٧ أيام. نزّل أي نسخة، ثم استعدها من التطبيق: الإعدادات ← النسخ الاحتياطي، أو مباشرة من «الحساب والمزامنة».", "sub"));
+  wrap.append(h);
+  if (!(j.backups || []).length) wrap.append(el("p", "لا توجد نسخ احتياطية بعد. تُرفع أول نسخة بعد ربط التطبيق بحسابك.", "sub")).style.padding = "0 20px 18px";
+  (j.backups || []).forEach((b) => {
+    const r = el("div", null, "bkr");
+    r.append(el("span", when(b.created_at)), el("span", ad(b.days) + " يومًا", "sub"), el("span", ad(Math.max(1, Math.round(b.size / 1024))) + " ك.ب", "sub"));
+    const d = el("button", "تنزيل", "ghost"); d.style.color = "var(--ok)"; d.style.borderColor = "var(--ok)";
+    d.onclick = async () => {
+      d.disabled = true; const x = await vault("backup-get", { pin: PIN, id: b.id }); d.disabled = false;
+      if (!x.j.ok) return fail(x.status, x.j);
+      const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([x.j.payload], { type: "application/json" }));
+      a.download = "sijil-backup-" + b.created_at.slice(0, 10) + ".json"; document.body.append(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    };
+    r.append(d); wrap.append(r);
+  });
+  box.append(wrap);
 }
 function pick(k) {
+  show("backups", false); show("view", true);
   document.querySelectorAll(".mi").forEach((b) => b.classList.toggle("on", b.dataset.k === k));
   const m = months.find((x) => x.month === k); if (!m) return;
   slip(m); cal(m);
@@ -349,12 +398,27 @@ function cal(m) {
         if (r.ot) c.append(el("span", "إضافي " + hm(r.ot), "t ot"));
       }
       else c.append(el("span", TYPE[r.type] || "", "t"));
-      if (r.note) c.title = r.note;
+      if (r.note && String(r.note).trim()) { c.append(el("span", "ملاحظة", "nt")); c.title = r.note; }
     }
     g.append(c);
   }
-  w.append(hd, g);
+  const nts = (m.days || []).filter((d) => d.note && String(d.note).trim()).sort((a, b) => (a.d < b.d ? -1 : 1));
+  const nb = el("div", null, "notes"); nb.append(el("h3", "ملاحظات الشهر"));
+  if (!nts.length) nb.append(el("p", "لا توجد ملاحظات هذا الشهر.", "sub"));
+  nts.forEach((d) => {
+    const [yy, mm, dd] = d.d.split("-").map(Number), r = el("div", null, "note");
+    r.append(el("b", WD[(new Date(yy, mm - 1, dd).getDay() + 1) % 7] + " " + ad(dd)), el("span", d.note)); nb.append(r);
+  });
+  w.append(hd, g, nb);
 }
+
+// زر «إظهار/إخفاء» لكل خانة سرية، لتعرف ماذا كتبت
+document.querySelectorAll("input[type=password]").forEach((i) => {
+  const w = document.createElement("div"); w.className = "pw"; i.parentNode.insertBefore(w, i); w.append(i);
+  const b = el("button", "إظهار", "eye"); b.type = "button"; b.setAttribute("aria-label", "إظهار أو إخفاء ما كتبته");
+  b.onclick = () => { const h = i.type === "password"; i.type = h ? "text" : "password"; b.textContent = h ? "إخفاء" : "إظهار"; };
+  w.append(b);
+});
 
 // خروج تلقائي بعد 30 دقيقة بلا نشاط
 let idleT; const IDLE = 30 * 60 * 1000;
